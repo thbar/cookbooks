@@ -76,6 +76,28 @@ directory node[:nginx][:dir] do
   mode "0755"
 end
 
+service 'nginx' do
+  action :nothing
+end
+
+
+template "nginx.conf" do
+  path "#{node[:nginx][:dir]}/nginx.conf"
+  source "nginx.conf.erb"
+  owner "root"
+  group "root"
+  mode "0644"
+  notifies :restart, resources(:service => "nginx"), :delayed
+end
+
+cookbook_file "#{node[:nginx][:dir]}/mime.types" do
+  source "mime.types"
+  owner "root"
+  group "root"
+  mode "0644"
+  notifies :restart, resources(:service => "nginx"), :delayed
+end
+
 unless platform?("centos","redhat","fedora")
   runit_service "nginx"
 
@@ -123,21 +145,4 @@ end
     owner "root"
     group "root"
   end
-end
-
-template "nginx.conf" do
-  path "#{node[:nginx][:dir]}/nginx.conf"
-  source "nginx.conf.erb"
-  owner "root"
-  group "root"
-  mode "0644"
-  notifies :restart, resources(:service => "nginx"), :immediately
-end
-
-cookbook_file "#{node[:nginx][:dir]}/mime.types" do
-  source "mime.types"
-  owner "root"
-  group "root"
-  mode "0644"
-  notifies :restart, resources(:service => "nginx"), :immediately
 end
