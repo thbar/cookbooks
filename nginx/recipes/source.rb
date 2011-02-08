@@ -47,23 +47,17 @@ node.set[:nginx][:configure_flags] = [
   "--with-http_gzip_static_module"
 ]
 
-# optional passenger module
-if node[:nginx][:passenger][:version]
+if node[:nginx][:passenger][:enabled] == true
+  node.set[:nginx][:configure_flags] = node[:nginx][:configure_flags] << "--add-module=#{node[:nginx][:passenger][:nginx_module]}"
+
   package 'libcurl4-openssl-dev' do
     action :install
   end
 
-  bash "install passenger with rvm" do
-    code <<-EOH
-      rvmsudo gem install passenger -v=#{node[:nginx][:passenger][:version]} --no-rdoc --no-ri
-    EOH
-    not_if { `gem list passenger`.include?(node[:nginx][:passenger][:version]) }
+  gem_package 'passenger' do
+    action :install
+    version node[:nginx][:passenger][:version]
   end
-
-  nginx_passenger_module = File.expand_path(File.join(File.dirname(`which passenger`),
-  "../gems/passenger-#{node[:nginx][:passenger][:version]}/ext/nginx"))
-
-  node.set[:nginx][:configure_flags] = node[:nginx][:configure_flags] << "--add-module=#{nginx_passenger_module}"
 end
 
 configure_flags = node[:nginx][:configure_flags].join(" ")
@@ -74,6 +68,8 @@ remote_file "#{Chef::Config[:file_cache_path]}/nginx-#{nginx_version}.tar.gz" do
 end
 
 bash "compile_nginx_source" do
+  Chef::Log.debug "nginx is configured flags #{configure_flags}"
+  
   cwd Chef::Config[:file_cache_path]
   code <<-EOH
     tar zxf nginx-#{nginx_version}.tar.gz

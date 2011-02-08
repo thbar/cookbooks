@@ -34,5 +34,8 @@ default[:nginx][:worker_processes]   = cpu[:total]
 default[:nginx][:worker_connections] = 2048
 default[:nginx][:server_names_hash_bucket_size] = 64
 
-# install passenger and compiles nginx with its module if enabled
-#default[:nginx][:passenger][:version] = '3.0.2'
+# optional nginx module for passenger
+default[:nginx][:passenger][:enabled] = false
+default[:nginx][:passenger][:root] = "/usr/local/rvm/gems/ruby-1.9.2-p136/gems/passenger-3.0.2"
+default[:nginx][:passenger][:ruby] = "/usr/local/rvm/wrappers/default/ruby"
+default[:nginx][:passenger][:nginx_module] = File.join(nginx[:passenger][:root], 'ext/nginx')

@@ -17,6 +17,14 @@ http {
 
   access_log	<%= node[:nginx][:log_dir] %>/access.log;
 
+<% if node[:nginx][:passenger][:enabled] %>
+  <% if node[:nginx][:passenger][:root] -%>
+  passenger_root <%= node[:nginx][:passenger][:root] %>;
+  <% end -%>
+  <% if node[:nginx][:passenger][:ruby] -%>
+  passenger_ruby <%= node[:nginx][:passenger][:ruby] %>;
+  <% end -%>
+<% end %>   
   sendfile on;
   tcp_nopush on;
   tcp_nodelay on;
